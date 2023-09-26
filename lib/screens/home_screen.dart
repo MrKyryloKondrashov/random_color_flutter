@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:random_color_app/utils/background_color_mode.dart';
-import 'package:random_color_app/widgets/linear_gradient_container.dart';
-import 'package:random_color_app/widgets/radial_gradient_container.dart';
-import 'package:random_color_app/widgets/single_color_container.dart';
+import 'package:random_color_app/utils/color_generator.dart';
 import 'package:random_color_app/widgets/switch_color_drawer.dart';
 
 
@@ -18,6 +16,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   BackgroundColorMode currentMode = BackgroundColorMode.singleColor;
   Map<BackgroundColorMode, bool> filters = {...kFilters};
+  BoxDecoration boxDecoration = BoxDecoration(
+        color: getRandomColor(),
+    );
+  //List<Color> color;
 
   @override
   void initState() {
@@ -31,7 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _changeColorMode({required bool isActive,
                         required BackgroundColorMode mode,}) {
     filters = {...kFilters, mode: isActive};
-    setState(() {
       if (!filters.values.contains(true)) {
         filters[BackgroundColorMode.singleColor] = true;
         currentMode = BackgroundColorMode.singleColor;
@@ -44,27 +45,36 @@ class _HomeScreenState extends State<HomeScreen> {
         currentMode = mode;
       }
       Navigator.of(context).pop();
-    });
+      _changeColor();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    Widget content = const SingleColorContainer();
-    switch (currentMode) {
-      case BackgroundColorMode.linearGradient:
-        {
-          content = const LinearGradientContainer();
-        }
-      case BackgroundColorMode.radialGradient:
-        {
-          content = const RadialGradientContainer();
-        }
-      default:
-        {
-          break;
-        }
+  void _changeColor(){
+    setState(() {
+      boxDecoration = BoxDecoration(
+        color: getRandomColor(),
+    );
+
+    if(currentMode == BackgroundColorMode.linearGradient){
+      boxDecoration = BoxDecoration(
+          gradient: LinearGradient(colors: [getRandomColor(),  
+                                            getRandomColor()],
+          begin: Alignment.topLeft,
+          end : Alignment.bottomRight,),
+        );
     }
 
+    if(currentMode == BackgroundColorMode.radialGradient){
+      boxDecoration = BoxDecoration(
+            gradient: RadialGradient(
+          colors: [getRandomColor(), getRandomColor()],
+        ),);
+    }
+    });
+  }
+ 
+  @override
+  Widget build(BuildContext context) {
+    
     return Scaffold(
         appBar: AppBar(
           title: const Text('Color Random Generator'),
@@ -73,6 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
         drawer:
             SwitchColorDrawer(filters: filters, 
             changeColorMode: _changeColorMode,),
-        body: content,);
+        body:  InkWell(
+      onTap: _changeColor,
+      child: Container(
+       decoration: boxDecoration,
+        alignment: Alignment.center,
+        child: const Text('Hello there'),
+      ),
+    ),);
   }
 }
